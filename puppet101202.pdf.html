@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+   <title>munki and puppet, sitting in a tree</title>
+   
+   
+
+<style>
+html, body { margin: 0; padding: 0; }
+
+body { font-family: Verdana, Geneva, Arial, Helvetica, sans-serif; }
+
+a:link, a:visited { color: black; }
+
+h1 { font-size: 30pt;  }
+h2 { font-size: 28pt;  }
+h3 { font-size: 25pt;  }
+p, li, dt, dd, td, th { font-size: 18pt; }
+
+pre { font-size: 14pt;  }
+pre.small { font-size: 11pt; }
+
+pre.code {
+        background-color: azure;
+        padding: 5px;
+      }
+     
+ul { list-style-type: square; }    
+   
+.center { text-align: center; }   
+     
+.slide { page-break-after: always;
+         min-height: 100mm;
+         padding: 40px;
+         
+         border: 1px dotted black;
+
+/*      
+  background: -moz-linear-gradient( top, maroon, red);
+*/
+       }
+
+
+
+/*
+for princexml (CSS3 paged media support)
+@page { size: A4 landscape }
+*/
+</style>
+
+</head>
+<body>
+
+<div class="presentation">
+
+<div class='slide '>
+<h1>munki and puppet, <br />sitting in a tree</h1><p><br /></p>
+<p><img src="images/munki.jpg" width="45%" float: left >
+<img src="images/puppetlabs.png" width="50%" float: right ></p>
+<p style="text-align:center;">Nate St. Germain<br />
+12/2/2010<br /></p>
+
+</div>
+<div class='slide '>
+<h1>picking up where we left off: munki and puppet</h1><p>So what are we doing?</p>
+<ul>
+	<li class="step">15 minutes of munki talk</li>
+	<li class="step">45 minutes with puppet</li>
+	<li class="step">That&#8217;s a rough plan, at least…</li>
+</ul>
+
+</div>
+<div class='slide '>
+<h1>why is any of this interesting?</h1><ol>
+	<li class="step">Munki is basically like apple&#8217;s software update server but for third party software and arbitrary packages. It will save you tons of time.</li>
+	<li class="step">Puppet is a configuration management framework that allows you to model system states and maintain them. It will save you tons of time.</li>
+</ol>
+
+</div>
+<div class='slide '>
+<h1>munki: a summary</h1><p>Munki was written by <a href="http://managingmacosx.wordpress.com">Greg Neagle</a>, a sysadmin at disney animation studios. he wanted to implement configuration management software, like jamf&#8217;s casper suite, but they didn&#8217;t have the budget at the time. So instead, he wrote his own tools to manage software deployment in conjunction with <a href="http://rsug.itd.umich.edu/software/radmind">radmind</a>, which they already use. With that in mind, he wanted tools that would accommodate troublesome installers from adobe and other vendors.</p>
+<p>The munki project is open source, actively developed by a growing community, and available at <a href="http://code.google.com/p/munki">http://code.google.com/p/munki</a>.</p>
+
+</div>
+<div class='slide '>
+<h1>munki: requirements</h1><ul>
+	<li class="step">Server side: apache or any modern web server that can handle files over 2 gb should work. some large app dmgs will exceed 2 gb.</li>
+	<li class="step">Server and client side: current munkitools installed with a modified preference file</li>
+	<li class="step">Servers can be any suitable platform, not just OS X. Clients must be OS X.</li>
+</ul>
+
+</div>
+<div class='slide '>
+<h1>munki: making it go</h1><ul>
+	<li class="step">Prep your installer pkg (we&#8217;re not covering this piece today).</li>
+	<li class="step">Import the pkg to your Munki repository.</li>
+	<li class="step">Add it to the correct catalog.</li>
+	<li class="step">Verify it&#8217;s available on clients.</li>
+	<li class="step">By default, the launchd job has clients check the server once a day for updates.
+	<ul>
+		<li class="step">You can also force the updates at any time under the hood by using <code>managedsoftwareupdate</code>.</li>
+	</ul></li>
+</ul>
+
+</div>
+<div class='slide '>
+<h1>munki: importing packages</h1><ul>
+	<li class="step">The easiest way is to use the <code>munkiimport</code> command under /usr/local/munki.
+	<ul>
+		<li class="step">Use <code>munkiimport --configure</code> to set some defaults first.</li>
+	</ul></li>
+	<li class="step">Add the pkg name to the appropriate manifest in the munki repo.</li>
+	<li class="step">Once that&#8217;s done, you should be able to test with a client. We&#8217;ll take a look in a minute here.</li>
+</ul>
+
+</div>
+<div class='slide '>
+<h1>munki: configuring a client</h1><ul>
+	<li class="step">Install current munkitools on the hosts you want to manage.</li>
+	<li class="step">Be sure /Library/Preferences/ManagedInstalls.plist includes your software repository server details.</li>
+</ul>
+
+</div>
+<div class='slide '>
+<h1>munki: example munki preferences file</h1><p>The /Library/Preferences/ManagedInstalls.plist file should look something like this:</p>
+<pre class='code'>
+&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd"&gt;
+&lt;plist version="1.0"&gt;
+&lt;dict&gt;
+	&lt;key&gt;ClientIdentifier&lt;/key&gt;
+	&lt;string&gt;production&lt;/string&gt;
+	&lt;key&gt;DaysBetweenNotifications&lt;/key&gt;
+	&lt;integer&gt;1&lt;/integer&gt;
+	&lt;key&gt;InstallAppleSoftwareUpdates&lt;/key&gt;
+	&lt;true/&gt;
+	&lt;key&gt;LastCheckDate&lt;/key&gt;
+	&lt;date&gt;2010-11-27T18:41:15Z&lt;/date&gt;
+	&lt;key&gt;LastCheckResult&lt;/key&gt;
+	&lt;integer&gt;0&lt;/integer&gt;
+	&lt;key&gt;LogFile&lt;/key&gt;
+	&lt;string&gt;/Library/Managed Installs/Logs/ManagedSoftwareUpdate.log&lt;/string&gt;
+	&lt;key&gt;LoggingLevel&lt;/key&gt;
+	&lt;integer&gt;1&lt;/integer&gt;
+	&lt;key&gt;ManagedInstallDir&lt;/key&gt;
+	&lt;string&gt;/Library/Managed Installs&lt;/string&gt;
+	&lt;key&gt;SoftwareRepoURL&lt;/key&gt;
+	&lt;string&gt;http://nate.adullmoment.com/munki&lt;/string&gt;
+	&lt;key&gt;SoftwareUpdateServerURL&lt;/key&gt;
+	&lt;string&gt;http://swupd.adullmoment.com:8088/index.sucatalog&lt;/string&gt;
+	&lt;key&gt;SuppressAutoInstall&lt;/key&gt;
+	&lt;false/&gt;
+	&lt;key&gt;SuppressStopButtonOnInstall&lt;/key&gt;
+	&lt;false/&gt;
+	&lt;key&gt;SuppressUserNotification&lt;/key&gt;
+	&lt;false/&gt;
+	&lt;key&gt;UseClientCertificate&lt;/key&gt;
+	&lt;false/&gt;
+&lt;/dict&gt;
+&lt;/plist&gt;
+</pre>
+
+</div>
+<div class='slide '>
+<h1>munki: example manifest file</h1><p>A sample catalog looks like this. Note the array of installable items:</p>
+<pre class='code'>
+&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd"&gt;
+&lt;plist version="1.0"&gt;
+&lt;dict&gt;
+	&lt;key&gt;catalogs&lt;/key&gt;
+	&lt;array&gt;
+		&lt;string&gt;testing&lt;/string&gt;
+		&lt;string&gt;production&lt;/string&gt;
+	&lt;/array&gt;
+	&lt;key&gt;managed_installs&lt;/key&gt;
+	&lt;array&gt;
+		&lt;string&gt;TextWrangler&lt;/string&gt;
+		&lt;string&gt;iterm&lt;/string&gt;
+		&lt;string&gt;Firefox&lt;/string&gt;
+		&lt;string&gt;Quinn&lt;/string&gt;
+		&lt;string&gt;TSP Managed Mac&lt;/string&gt;
+	&lt;/array&gt;
+&lt;/dict&gt;
+&lt;/plist&gt;
+</pre>
+
+</div>
+<div class='slide '>
+<h1>munki: managedsoftwareupdate options</h1><p><code>/usr/local/munki/managedsoftwareupdate --help</code> outputs the following options:</p>
+<pre class='code'>
+Usage: managedsoftwareupdate [options]
+
+Options:
+  -h, --help            show this help message and exit
+  -a, --auto            Used by launchd LaunchAgent for scheduled runs.
+                        No user feedback or intervention. All other options
+                        ignored.
+  -l, --logoutinstall   Used by launchd LaunchAgent when running at the
+                        loginwindow.
+  --installwithnologout
+                        Used by Managed Software Update.app when user
+                        triggers an install without logging out.
+  --manualcheck         Used by launchd LaunchAgent when checking
+                        manually.
+  -m, --munkistatusoutput
+                        Uses MunkiStatus.app for progress feedback when
+                        installing.
+  --id=ID               Alternate identifier for catalog retreival
+  -q, --quiet           Quiet mode. Logs messages, but nothing to stdout.
+                        --verbose is ignored if --quiet is used.
+  -v, --verbose         More verbose output. May be specified multiple
+                        times.
+  --checkonly           Check for updates, but don't install them.
+                        This is the default behavior.
+  --installonly         Skip checking and install any pending updates.
+  -V, --version         Print the version of the munki tools and exit.
+</pre>
+
+</div>
+<div class='slide '>
+<h1>munki: installing packages</h1><p>munki can install:</p>
+<ul>
+	<li>Apple-flat packages (.pkg)</li>
+	<li>Apple-flat meta-packages (.mpkg)</li>
+	<li>Apple-non-flat packages (.pkg)<sup class="footnote" id="fnr1"><a href="#fn1">1</a></sup></li>
+	<li>Apple-non-flat meta-packages (.mpkg)<sup class="footnote" id="fnr1"><a href="#fn1">1</a></sup></li>
+	<li>Drag-and-drop disk images</li>
+	<li>Adobe CS3/CS4/CS5 Deployment &#8220;packages&#8221; created with Adobe&#8217;s Enterprise Deployment tools &#8211; CS3 Info CS4 Info CS5 Info</li>
+	<li>Many Adobe CS3/CS4/CS5 product updaters</li>
+	<li>Adobe Acrobat Pro 9.x updater disk images as downloaded from Adobe</li>
+</ul>
+<p class="footnote" id="fn1"><a href="#fnr1"><sup>1</sup></a> Must be wrapped in a disk image file (.dmg). Disk image cannot require user to agree to a SLA before prior to mounting.</p>
+<ul>
+	<li class="step">There&#8217;s also facility for managing dependencies and removals, which we might not cover today. (check the wiki)</li>
+</ul>
+
+</div>
+<div class='slide '>
+<h1>munki: demonstration</h1><ul>
+	<li>Installing simple drag &amp; drop apps, like iTerm</li>
+	<li>Installing configuration, like a new local print queue</li>
+	<li>Installing large apps, like Adobe CS 5 Premium</li>
+	<li>Removing an app with managed_uninstalls</li>
+	<li>Dependencies: Installing only if something else exists</li>
+</ul>
+
+</div>
+<div class='slide '>
+<h1>munki: wrapup</h1><p>Munki allows you to deploy apps and configuration changes to your clients, even if they&#8217;re not local admins. It&#8217;s effective, quick, and relatively simple to use. I hope it makes some sense after this quick review. If you have questions, we can discuss more later.</p>
+
+</div>
+<div class='slide '>
+<h1>puppet: what is this stuff?</h1><p>From the puppetlabs site:</p>
+<ul>
+	<li class="step">As system administrators acquire more and more systems to manage, automation of mundane tasks is increasingly important. Rather than develop in-house scripts, it is desirable to share a system that everyone can use, and invest in tools that can be used regardless of one’s employer. Certainly doing things manually doesn’t scale.</li>
+</ul>
+<ul>
+	<li class="step">Puppet has been developed to help the sysadmin community move to building and sharing mature tools that avoid the duplication of everyone solving the same problem. It does so in two ways:</li>
+</ul>
+<ul>
+	<li class="step">It provides a powerful framework to simplify the majority of the technical tasks that sysadmins need to perform</li>
+</ul>
+<ul>
+	<li class="step">The sysadmin work is written as code in Puppet’s custom language which is shareable just like any other code.</li>
+</ul>
+<ul>
+	<li class="step">This means that your work as a sysadmin can get done much faster, because you can have Puppet handle most or all of the details, and you can download code from other sysadmins to help you get done even faster. The majority of Puppet implementations use at least one or two modules developed by someone else, and there are already hundreds of modules developed and shared by the community.</li>
+</ul>
+
+</div>
+<div class='slide '>
+<h1>puppet: no, really&#8230; what&#8217;s the deal?</h1><h2>Puppet will save you time.</h2>
+
+</div>
+<div class='slide '>
+<h1>puppet: what else?</h1><p><strong>Q</strong> Is puppet idempotent?</p>
+<ul>
+	<li class="step">Yes.</li>
+</ul>
+<ul>
+	<li class="step">idempotentcy: <em>Repeated applications have the same effect as one. Results are repeatable.</em></li>
+</ul>
+
+</div>
+<div class='slide '>
+<h1>puppet: 0.25.x vs. 2.6.x branches</h1><p><strong>Note:</strong> Puppetlabs merged in a pile of improvements this past year and bumped the version number from 0.25.x to 2.6.&#215;. Generally, you should use the latest stable version, which is 2.6.4 as of this writing.</p>
+<ul>
+	<li>Download from Puppetlabs directly here: <a href="http://www.puppetlabs.com/misc/download-options/">http://www.puppetlabs.com/misc/download-options/</a></li>
+	<li>Download OS X packages here: <a href="http://sites.google.com/a/explanatorygap.net/puppet">http://sites.google.com/a/explanatorygap.net/puppet</a></li>
+	<li>Install both facter and puppet via rubygems with :<code>sudo gem install facter puppet</code></li>
+	<li>Or, you can build from source available on the Puppetlabs site or github at <a href="http://github.com/puppetlabs">http://github.com/puppetlabs</a></li>
+</ul>
+<p>There&#8217;s enough different between the two versions to note this fact. Learn all about it on the roadmap page <a href="http://projects.puppetlabs.com/projects/puppet/roadmap">here</a>.</p>
+<p>The biggest change with the version bump is the move to a single binary instead of multiple. The next slide shows these differences.</p>
+
+</div>
+<div class='slide '>
+<h1>puppet: single binary differences vs. old style</h1><p>List of binary changes:</p>
+<pre class='code'>
+puppetmasterd –&gt; puppet master
+puppetd –&gt; puppet agent
+puppet –&gt; puppet apply
+puppetca –&gt; puppet cert
+ralsh –&gt; puppet resource
+puppetrun –&gt; puppet kick
+puppetqd –&gt; puppet queue
+filebucket –&gt; puppet filebucket
+puppetdoc –&gt; puppet doc
+pi –&gt; puppet describe
+</pre>
+
+</div>
+<div class='slide '>
+<h1>puppet: facter and facts</h1><p>A lot of what puppet does depends on details about host systems. To determine these, puppet uses a utility called <code>facter</code>, which can also be used as a standalone tool.</p>
+<p>The current version of <code>facter</code> is 1.5.8.</p>
+<p>Facts are discovered by providers specific to each platform. There are generic, platform-specific, and custom facts.</p>
+<p>System facts can be used to build conditional logic for puppet manifests, among other things.</p>
+
+</div>
+<div class='slide '>
+<h1>puppet: sample facter output</h1><p>This is facter output from my laptop. Let&#8217;s take a quick look:</p>
+<pre class='code'>
+	domain =&gt; adullmoment.com
+facterversion =&gt; 1.5.8
+fqdn =&gt; derwin.adullmoment.com
+hardwaremodel =&gt; i386
+hostname =&gt; derwin
+interfaces =&gt; lo0,gif0,stf0,en0,fw0,en1,vboxnet0,vmnet1,vmnet8
+ipaddress =&gt; 10.11.10.143
+ipaddress_en1 =&gt; 10.11.10.143
+ipaddress_lo0 =&gt; 127.0.0.1
+ipaddress_vmnet1 =&gt; 192.168.188.1
+ipaddress_vmnet8 =&gt; 192.168.254.1
+kernel =&gt; Darwin
+kernelmajversion =&gt; 10.4
+kernelrelease =&gt; 10.4.0
+kernelversion =&gt; 10.4.0
+macaddress_en0 =&gt; c4:2c:03:1a:56:07
+macaddress_en1 =&gt; d8:a2:5e:92:a0:5e
+macaddress_fw0 =&gt; d8:a2:5e:ff:fe:e4
+macaddress_vboxnet0 =&gt; 0a:00:27:00:00:00
+macaddress_vmnet1 =&gt; 00:50:56:c0:00:01
+macaddress_vmnet8 =&gt; 00:50:56:c0:00:08
+macosx_buildversion =&gt; 10F569
+macosx_productname =&gt; Mac OS X
+macosx_productversion =&gt; 10.6.4
+macosx_productversion_major =&gt; 10.6
+macosx_productversion_minor =&gt; 4
+netmask =&gt; 255.255.255.0
+netmask_en1 =&gt; 255.255.255.0
+netmask_lo0 =&gt; 255.0.0.0
+netmask_vmnet1 =&gt; 255.255.255.0
+netmask_vmnet8 =&gt; 255.255.255.0
+network_en1 =&gt; 10.11.10.0
+network_lo0 =&gt; 127.0.0.0
+network_vmnet1 =&gt; 192.168.188.0
+network_vmnet8 =&gt; 192.168.254.0
+operatingsystem =&gt; Darwin
+operatingsystemrelease =&gt; 10.4.0
+path =&gt; /usr/local/git/bin:/opt/local/bin:/opt/local/sbin:/usr/bin:/usr/local/bin:/usr/local/sbin:/usr/local/mysql/bin:/opt/local/bin:/opt/local/sbin:/usr/local/git/bin:/usr/local/git/bin:/opt/local/bin:/opt/local/sbin:/usr/bin:/usr/local/bin:/sbin:/usr/sbin:/bin
+ps =&gt; ps auxwww
+puppetversion =&gt; 2.6.2
+rubyversion =&gt; 1.8.7
+sp_64bit_kernel_and_kexts =&gt; no
+sp_boot_mode =&gt; normal_boot
+sp_boot_rom_version =&gt; MBP71.0039.B05
+sp_boot_volume =&gt; surfboard
+sp_bus_speed =&gt; 1.07 GHz
+sp_cpu_type =&gt; Intel Core 2 Duo
+sp_current_processor_speed =&gt; 2.4 GHz
+sp_kernel_version =&gt; Darwin 10.4.0
+sp_l2_cache =&gt; 3 MB
+sp_local_host_name =&gt; derwin
+sp_machine_model =&gt; MacBookPro7,1
+sp_machine_name =&gt; MacBook Pro
+sp_mmm_entry =&gt; MMM_stateMMM_enabled
+sp_number_processors =&gt; 2
+sp_os_version =&gt; Mac OS X 10.6.4 (10F569)
+sp_packages =&gt; 1
+sp_physical_memory =&gt; 4 GB
+sp_platform_uuid =&gt; 7C6D122B-ABF4-563A-97FF-A8F61F5B848E
+sp_secure_vm =&gt; secure_vm_enabled
+sp_serial_number =&gt; WQ025BB8ATM
+sp_smc_version_system =&gt; 1.62f6
+sp_uptime =&gt; up 0:1:35:55
+sp_user_name =&gt; nate (n8)
+sshdsakey =&gt; AAAAB3NzaC1kc3MAAACBAOC10BBHGwS5M3Z6wOdfTQ8bONovpoxwiNod+hN9d9IVHwoPueMlJ4ujZSOF/FUX+rrJ9hWnY/MFEb+vJ7go+u5H/OpnwBVWWT6Ghrb99JqeUUj8SteeGfmpQtxuRhKQr5+5vkUGyKnjBqAK2uBKoegr8RD9EU7ZGMEeC56VbvZvAAAAFQCX04wwW/P9yq3rJwJ3ccieQbqROwAAAIEAuGXKXuICIyNXFY1Q8Cb8oWYYbGbKOws2JXZqBWyhBg68OtXvyxGZSFahS3mFdHWGVun8j8AMYbdGsPRgiyl4krnWrjDZRgTgLENEOMF1T7A5Kb7s7f9ZNVPZgXfZS6x+Tj0rxoPqogADE3ukOM1posUs7YR+baYjo4jQBGdLoSIAAACAEzhDMpCpx4Q/N3kcs4rqe1FMWdTVLTxYyuTjrVD4J+u0EL9dvATYkgq0vw7ozpd8HK1wsFESKhQRpXwWjENduucrBGQ2cWxZH7QeR8mXJbm9uDD7jk5ukMA9qJ/JhAu5h0tvRZ1Z0ChDXvSjG9r3dhsNklrmLW06mZxPxwDx6Bk=
+sshrsakey =&gt; AAAAB3NzaC1yc2EAAAABIwAAAQEApK6aXI9cEeX/581C2o2MiAX235NnQRNQNh/GCdI/59Og4uwXP1ylgaZ+US3vDYT3+ETG6qsYHlWtUfX+yZ3c0APwEd4WTHhbDSddV5+H0gms1vApnWdpiNHzf3ug2I7AFIWeBTBqyBMQZvpRVF0kmHN2/PRHBQSV44viSO725CVaw44J+dHs7/00uxVDEgV2irk4UwHlIveWUH6Ezkd9RG7ICrD14wvllc1f5Q3+2Ln/tsThxVHC5m2ZZ85VA18X7MUNxoP8ro4ylgt8d3l0MdXJlYsQh3AmsK4a4m/e0KZept5alU68aP7Q/EmBOYlTfquwEarV0RqHWAyVl4JbdQ==
+timezone =&gt; EST
+uptime =&gt; 1:35 hours
+uptime_days =&gt; 0
+uptime_hours =&gt; 1
+uptime_seconds =&gt; 5726
+</pre>
+
+</div>
+<div class='slide '>
+<h1>puppet: resource types</h1><p>Puppet uses resources to describe a system. The goal is to manage resources on hosts, so there are a number of available resource types that make management easier. Here are some of the basic types:</p>
+<ul>
+	<li class="step">file</li>
+	<li class="step">group</li>
+	<li class="step">user</li>
+	<li class="step">service</li>
+	<li class="step">package</li>
+	<li class="step">host</li>
+	<li class="step">computer (OS X only for mcx)</li>
+	<li class="step">exec</li>
+</ul>
+<p>##########</p>
+<p>There are many more resource types that puppet can manage. For more, check the language guide.</p>
+
+</div>
+<div class='slide '>
+<h1>puppet: file resources</h1><p>Generally, every resource has a name (namevar) associated with it. File resources often include other parameters, like mode and owner. This manifest is an example of setting ownership and modes on a file:</p>
+<pre class='code'>
+	# /etc/puppet/manifests/classes/sudo.pp
+
+class sudo {
+    file { "/etc/sudoers":
+        owner =&gt; "root",
+        group =&gt; "wheel",
+        mode  =&gt; 440,
+    }
+}
+</pre>
+
+</div>
+<div class='slide '>
+<h1>puppet: user and group resources</h1><p>User and group resources can be used to define local accounts &#8212; most often service accounts. You wouldn&#8217;t want to use these resources to create end user accounts, generally.</p>
+<p>Puppet also uses &#8220;virtual resources,&#8221; which can be realized or defined in a different fashion. For now, let&#8217;s focus on the basics.</p>
+<p>Here&#8217;s an example of a standard user account manifest:</p>
+<pre class='code'>
+	user { 'george':
+    ensure =&gt; 'present',
+    uid =&gt; '510',
+    home =&gt; '/Users/george',
+    comment =&gt; 'george',
+    gid =&gt; '510',
+    shell =&gt; '/bin/bash',
+    password =&gt; '0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000007D1580DAA27BCD5EBBEB67A23E610633F1548EC5D3E617AC0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
+}
+</pre>
+<p>##########</p>
+<p>Note the password hash is included in its entirety here. With non-login, service accounts, this usually isn&#8217;t required. The userhome property can also be managed. If it is, the homedir will be created upon account addition.</p>
+
+</div>
+<div class='slide '>
+<h1>puppet: service resources</h1><p>Service resources define service configuration and whether the services themselves are enabled, stopped, running, etc.</p>
+<p>Just like any resources, service definitions can depend upon other resources, like packages or other services, to be in place first.</p>
+<p>Here&#8217;s an example that shows some dependencies and slightly more advanced syntax:</p>
+<pre class='code'>
+	# enable remote desktop, ssh
+# added exec to set access for specific user, depends on user
+
+class remoteaccess {
+# ard
+    file { "/etc/RemoteManagement.launchd":
+		ensure =&gt; present,
+        owner =&gt; root,
+        group =&gt; wheel,
+        mode =&gt; 644,
+		content =&gt; "enabled",
+		alias =&gt; "ardpref",
+    }
+	exec { subscribe-ardpref:
+	  require =&gt; User["remote"],
+	  command =&gt; "/System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Resources/kickstart -activate -configure -clientopts -setreqperm -reqperm yes -setmenuextra -menuextra yes -configure -access -on -users remote -privs -all -restart -agent -menu",
+	  logoutput =&gt; true,
+	  subscribe =&gt; File["/etc/RemoteManagement.launchd"]
+	}
+
+
+# ssh
+    file { "/System/Library/LaunchDaemons/ssh.plist":
+        owner =&gt; root,
+        group =&gt; wheel,
+        mode =&gt; 644,
+    }
+    service { "com.openssh.sshd":
+        #provider =&gt; launchd,
+        enable =&gt; true,
+        ensure =&gt; running,
+        require =&gt; File["/System/Library/LaunchDaemons/ssh.plist"],
+        }
+}
+</pre>
+
+</div>
+<div class='slide '>
+<h1>puppet: exec resources</h1><p>Exec resources are the least auditable, since they rely on external commands to perform actions. If there are things that puppet can&#8217;t do any other way, the exec type can fill the gap.</p>
+<p>Here&#8217;s a simple example that pops up a HUD text box:</p>
+<pre class='code'>
+	# just a dumb class
+
+$text = "The purpose of Puppet’s language is to make it easy to specify the resources you need to manage on the machines you’re managing.\nThis guide will show you how the language works, going through some basic concepts. Understanding the Puppet language is key, as it’s the main driver of how you tell your Puppet managed machines what to do."
+
+exec{ talky:
+command =&gt; "/usr/local/bin/BigHonkingText -p 0 -h 50% -w 50% $text"
+}
+</pre>
+
+</div>
+<div class='slide '>
+<h1>puppet: a note on resource providers</h1><p>Resource providers are platform-specific chunks of code that deal with managing resources on their respective hosts. There are something like 20 different package providers, for instance.</p>
+<p>These providers abstract away the platform-specific bits and allow manifests to remain fairly portable across OSes.</p>
+
+</div>
+<div class='slide '>
+<h1>puppet: sample language syntax</h1><p>Puppet uses its own Domain Specific Language (DSL) or pure ruby in manifests. It supports, among other things, regular expressions, conditionals, arithmetic, boolean operators, selectors, variables, hashes, arrays, and comments.</p>
+<p>In addition, any facter fact, including custom facts, can be used as a variable within puppet manifests.</p>
+
+</div>
+<div class='slide '>
+<h1>puppet: ralsh</h1><p>Puppet includes something called the &#8220;resource abstraction layer&#8221; and a utility formerly called <code>ralsh</code>, or the &#8220;resource abstraction layer shell.&#8221;</p>
+<p>Using <code>puppet resource</code> or <code>ralsh</code> will allow us to generate ready to run puppet resource definitions from new or existing resources. What does that mean? Let&#8217;s take a look.</p>
+<ul>
+	<li class="step"></li>
+</ul>
+
+</div>
+<div class='slide '>
+<h1>puppet: manifests</h1></div>
+<div class='slide '>
+<h1>puppet: classes</h1><p>Think of classes as groupings of resources. They&#8217;re a simple way to define what a machine does, potentially including many of the resource types under one class.</p>
+<p>This example defines the mysql server and client on CentOS:
+<pre class='code'>
+	# Class: mysql</p>
+<ol>
+	<li>100825
+#
+class mysql {
+	package { &#8216;mysql&#8217;:
+		ensure =&gt; installed,
+	}
+	package { &#8216;mysql-server&#8217;:
+		ensure =&gt; absent,
+		require =&gt; Service[&#8216;mysqld&#8217;],
+	}
+	service	{ &#8216;mysqld&#8217;:
+		ensure =&gt; stopped,
+	}
+}</li>
+</ol>
+<p>class mysql::server inherits mysql {
+  Package[&#8216;mysql-server&#8217;] {
+	ensure =&gt; &#8216;installed&#8217;,
+	require =&gt; undef,
+	}
+  Service[&#8216;mysqld&#8217;] {
+	require =&gt; Package[&#8216;mysql-server&#8217;],
+	ensure =&gt; &#8216;running&#8217;,
+	enable =&gt; true,
+	}
+  notice (&#8220;installed mysqld&#8221;)
+}
+</pre></p>
+
+</div>
+<div class='slide '>
+<h1>puppet: modules</h1><p>(modules are meant to be reusable chunks of code, ideally shared with others in the community)</p>
+
+</div>
+<div class='slide '>
+<h1>puppet: nodes</h1></div>
+<div class='slide '>
+<h1>puppet: puppetd and puppetmasterd</h1></div>
+<div class='slide '>
+<h1>puppet: demonstration</h1><p>puppet standalone demo
+puppetd + puppetmaster demo</p>
+<ul>
+	<li>install an app</li>
+	<li>configure a service</li>
+	<li>add a local user</li>
+	<li>enforce state of a file</li>
+</ul></div>
+
+
+  </div> <!-- presentation -->
+</body>
+</html> 
+

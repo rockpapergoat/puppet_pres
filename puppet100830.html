@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html>
+<head>
+   <meta http-equiv="content-type" content="text/html;charset=utf-8"> 
+   <title>Untitled Slide Show</title>
+
+<meta name="generator" content="- generator not found -">
+<meta name="author"    content="- author not found -" >
+
+<!-- S6 style sheet links -->
+<link rel="stylesheet" href="puppet100830.css" media="projection" id="styleProjection">
+<link rel="stylesheet" href="s6/screen.css"         media="screen"     id="styleScreen">
+<link rel="stylesheet" href="s6/print.css"          media="print">
+
+<!-- S6 JS -->
+<script src="s6/jquery.js"></script>
+<script src="s6/jquery.slideshow.js"></script>
+<script>
+  $(document).ready( function() {
+    Slideshow.init();
+  } );
+
+  
+</script>
+
+<!-- Better Browser Banner for Microsoft Internet Explorer (IE) -->
+<!--[if IE]>
+<script src="s6/jquery.microsoft.js"></script>
+<![endif]-->
+
+
+
+</head>
+<body>
+
+<div class="layout"> 
+  <div id="header"></div>
+  <div id="footer">
+    <h1></h1>
+    <h2></h2>
+  </div>
+</div>
+
+<div class="presentation">
+   
+<div class='slide '>
+<h1>deployment tools:
+packaging, imaging, puppet, and friends</h1></div>
+<div class='slide '>
+<h1>are some of my fav-o-rite things</h1></div>
+<div class='slide '>
+<h1>what are we covering today?</h1><p>Time permitting, we&#8217;ll have a look at the following:</p>
+<ul>
+	<li class="step">packagemaker and other packaging tools</li>
+	<li class="step">instadmg</li>
+	<li class="step">Deploy Studio</li>
+	<li class="step">puppet</li>
+	<li class="step">babushka (possibly)</li>
+	<li class="step">git (maybe)</li>
+	<li class="step">mcx (perhaps)</li>
+</ul>
+
+</div>
+<div class='slide '>
+<h1>some basics</h1><p>We&#8217;re covering topics associated with automated imaging and deployment.</p>
+<p>Without going into too much detail, what are the two main techniques commonly used for imaging OS X clients?</p>
+<ul>
+	<li class="step">monolithic imaging
+	<ul>
+		<li class="step">usually accomplished by prepping a &#8220;golden master&#8221; image</li>
+		<li class="step">the resulting image is deployed to clients via
+		<ul>
+			<li class="step">local disk (asr, disk utility, ccc, etc.)</li>
+			<li class="step">netboot or netinstall (prep with system imaging utility, then served by OS X Server netboot)</li>
+		</ul></li>
+	</ul></li>
+</ul>
+<ul>
+	<li class="step">modular imaging
+	<ul>
+		<li class="step">deployment images are composed of a base OS (usually the retail OS installer or hardware specific dvd) and packaged or re-packaged apps, settings, and startup scripts, etc.</li>
+		<li class="step">the resulting image is deployed via the same methods as above</li>
+	</ul></li>
+</ul>
+
+</div>
+<div class='slide '>
+<h1>monolithic imaging</h1><p><strong>Pros:</strong></p>
+<ul>
+	<li class="step">there&#8217;s a low learning curve; anybody can image a machine.</li>
+	<li class="step">the tools are familiar.</li>
+	<li class="step">there are probably others, but we&#8217;re not focusing on this today.</li>
+</ul>
+
+</div>
+<div class='slide '>
+<h1>monolithic imaging</h1><p><strong>Cons:</strong></p>
+<ul>
+	<li class="step">the process is slow.</li>
+	<li class="step">it&#8217;s difficult to update the images, often requiring updating multiple images for hardware or config differences.</li>
+	<li class="step">it&#8217;s prone to errors and requires cleanup on the restored clients.</li>
+</ul>
+
+</div>
+<div class='slide '>
+<h1>modular imaging</h1><p><strong>Pros:</strong></p>
+<ul>
+	<li class="step">since the base OS is cached, updating modular images is easy.</li>
+	<li class="step">there are tools that automate most or all of the process, reducing chances of error.</li>
+	<li class="step">results are repeatable and clean, requiring no cleanup on restored clients.</li>
+	<li class="step">instead of managing multiple images, you can effectively just manage the packages and config, leaving the image creation to automation.</li>
+</ul>
+
+</div>
+<div class='slide '>
+<h1>modular imaging</h1><p><strong>Cons:</strong></p>
+<ul>
+	<li class="step">there&#8217;s a slightly higher learning curve, though not much.</li>
+	<li class="step">it may not be the best tool for every job. (but what is?)</li>
+	<li class="step">it still relies on images for restores. (may not be a con, but it&#8217;s a reality with OS X management.)</li>
+</ul>
+
+</div>
+<div class='slide '>
+<h1>let&#8217;s back up&#8230;</h1><p>Since packaging is so important to modular imaging, let&#8217;s cover that first.</p>
+<p>There are many packaging tools available. I suggest you try a few and stick with whatever you like best. They all pretty much do the same thing. Today, we&#8217;ll look at Apple&#8217;s PackageMaker, briefly look at JAMF&#8217;s Composer, and also glance at The Luggage.</p>
+<p>Some other tools are listed on the wiki here:</p>
+<p><a href="https://web.techsuperpowers.com/groups/tsp/wiki/79307/Packaging_resources.html">https://web.techsuperpowers.com/groups/tsp/wiki/79307/Packaging_resources.html</a></p>
+
+</div>
+<div class='slide '>
+<h1>packaging</h1><p>Lots of Mac apps are distributed as .pkg or .mpkg files already. Test the in modular workflows, and if they work fine, just drop them in as needed.</p>
+<p>For apps that are distributed as drag-copy installs or use some ridiculous proprietary packaging scheme (Adobe apps, VISE installers, etc.), you&#8217;re going to need to re-package those bad larries.</p>
+
+</div>
+<div class='slide '>
+<h1>packaging</h1><p>We don&#8217;t have time today to do an in-depth packaging workshop, but let&#8217;s look at re-packaging a drag-copy app bundle with PackageMaker.</p>
+
+</div>
+<div class='slide '>
+<h1>packaging</h1><p>musical interlude while we package something&#8230;</p>
+
+</div>
+<div class='slide '>
+<h1>packaging</h1><p>What&#8217;s a good candidate for re-packaging?</p>
+<ul>
+	<li class="step">almost anything</li>
+	<li class="step">applications with dodgy installers</li>
+	<li class="step">config files, like print configs and PPDs, font collections, and other user environment bobs and bits</li>
+	<li class="step">local accounts</li>
+	<li class="step">maintenance, first-run, and config scripts and launchd items</li>
+</ul>
+
+</div>
+<div class='slide '>
+<h1>packaging</h1><p>Related to that last point, <a href="http://github.com/unixorn/luggage">The Luggage</a> is an easy way to package app bundles and script files. The Luggage uses <code>make</code> to drive the PackageMaker binary, so you need both to get going. There is a bit of a learning curve, but it&#8217;s easy enough to use for simple packages.</p>
+<p>Some of the benefits of using The Luggage are:</p>
+<ul>
+	<li class="step">all steps are defined in makefiles, so they&#8217;re easily diffed and audited.</li>
+	<li class="step">it&#8217;s easy to check the source for luggage makefiles into source control.</li>
+	<li class="step">there are some convenience features that make some common tasks pretty easy.</li>
+</ul>
+<p>Let&#8217;s take a quick look here at packaging a script or app.</p>
+
+</div>
+<div class='slide '>
+<h1>packaging</h1><p>(luggage time)</p>
+
+</div>
+<div class='slide '>
+<h1>packaging notes</h1><p>These are some things to note when packaging apps:</p>
+<ul>
+	<li class="step">ensuring <code>root:admin</code> ownership of the apps at build time will avoid the annoying &#8220;you downloaded this from the internet&#8221; dialog tied to the metadata associated with downloaded apps.</li>
+	<li class="step">uninstalls of .pkg files can be done programmatically, but beware of deleting frameworks that other apps may need.</li>
+	<li class="step">re-packaging Adobe&#8217;s CS suites can work well, but installing them with pre-existing installs on disk will break the FLEX licensing scheme. for best results, remove any previous CS suite install before laying down the new one.</li>
+	<li class="step">MS Office 2008 updates should be packages now and generally work well enough as is. older Office 2004 updaters aren&#8217;t .pkg files and can be a pain to re-package. I recommend using snapshot packaging to derive them.</li>
+</ul>
+
+</div>
+<div class='slide '>
+<h1>imaging and deployment</h1><p>So we have a bunch of packages in hand now. I recommend rolling your own periodically as apps are updated. It&#8217;s much easier to manage a small collection of packages than to deal with updating monolithic images.</p>
+<p>Let&#8217;s use these packages.</p>
+
+</div>
+<div class='slide '>
+<h1>instadmg</h1><p>Let&#8217;s take a look at instadmg and instaup2date here.</p>
+<p>h1.	Deploy Studio</p>
+<p>Let&#8217;s take a look at DS here.</p>
+
+</div>
+<div class='slide '>
+<h1>puppet: what?</h1></div>
+<div class='slide '>
+<h1>puppet: syntax</h1></div>
+<div class='slide '>
+<h1>puppet: ralsh</h1><pre class='code'>
+user { 'n8':
+    ensure =&gt; 'present',
+    uid =&gt; '501',
+    home =&gt; '/Users/n8',
+    comment =&gt; 'nate',
+    gid =&gt; '501',
+    shell =&gt; '/bin/bash',
+    password =&gt; 'test'
+}
+</pre>
+
+</div>
+<div class='slide '>
+<h1>puppet: manifests</h1></div>
+<div class='slide '>
+<h1>puppet: classes</h1></div>
+<div class='slide '>
+<h1>puppet: modules</h1></div>
+<div class='slide '>
+<h1>puppet: puppetd and puppetmasterd</h1></div>
+<div class='slide '>
+<h1>babushka</h1></div>
+<div class='slide '>
+<h1>git usage</h1></div>
+<div class='slide '>
+<h1>mcx in brief</h1></div>
+
+
+</div><!-- presentation -->
+</body>
+</html>

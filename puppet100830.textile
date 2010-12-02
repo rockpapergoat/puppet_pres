@@ -1,0 +1,178 @@
+h1. deployment tools:
+packaging, imaging, puppet, and friends
+
+h1. are some of my fav-o-rite things
+
+h1. what are we covering today?
+
+Time permitting, we'll have a look at the following:
+
+*(step) packagemaker and other packaging tools
+*(step) instadmg
+*(step) Deploy Studio
+*(step) puppet
+*(step) babushka (possibly)
+*(step) git (maybe)
+*(step) mcx (perhaps)
+
+h1. some basics
+
+We're covering topics associated with automated imaging and deployment.
+
+Without going into too much detail, what are the two main techniques commonly used for imaging OS X clients?
+
+*(step) monolithic imaging
+**(step) usually accomplished by prepping a "golden master" image
+**(step) the resulting image is deployed to clients via
+***(step) local disk (asr, disk utility, ccc, etc.)
+***(step) netboot or netinstall (prep with system imaging utility, then served by OS X Server netboot)
+
+*(step) modular imaging
+**(step) deployment images are composed of a base OS (usually the retail OS installer or hardware specific dvd) and packaged or re-packaged apps, settings, and startup scripts, etc.
+**(step) the resulting image is deployed via the same methods as above
+
+h1. monolithic imaging
+
+*Pros:*
+*(step) there's a low learning curve; anybody can image a machine.
+*(step) the tools are familiar.
+*(step) there are probably others, but we're not focusing on this today.
+
+h1. monolithic imaging
+
+*Cons:*
+*(step) the process is slow.
+*(step) it's difficult to update the images, often requiring updating multiple images for hardware or config differences.
+*(step) it's prone to errors and requires cleanup on the restored clients.
+
+h1. modular imaging
+
+*Pros:*
+*(step) since the base OS is cached, updating modular images is easy.
+*(step) there are tools that automate most or all of the process, reducing chances of error.
+*(step) results are repeatable and clean, requiring no cleanup on restored clients.
+*(step) instead of managing multiple images, you can effectively just manage the packages and config, leaving the image creation to automation.
+
+h1. modular imaging
+
+*Cons:*
+*(step) there's a slightly higher learning curve, though not much.
+*(step) it may not be the best tool for every job. (but what is?)
+*(step) it still relies on images for restores. (may not be a con, but it's a reality with OS X management.)
+
+h1. let's back up...
+
+Since packaging is so important to modular imaging, let's cover that first.
+
+There are many packaging tools available. I suggest you try a few and stick with whatever you like best. They all pretty much do the same thing. Today, we'll look at Apple's PackageMaker, briefly look at JAMF's Composer, and also glance at The Luggage.
+
+Some other tools are listed on the wiki here:
+
+"https://web.techsuperpowers.com/groups/tsp/wiki/79307/Packaging_resources.html":https://web.techsuperpowers.com/groups/tsp/wiki/79307/Packaging_resources.html 
+
+h1. packaging
+
+Lots of Mac apps are distributed as .pkg or .mpkg files already. Test the in modular workflows, and if they work fine, just drop them in as needed.
+
+For apps that are distributed as drag-copy installs or use some ridiculous proprietary packaging scheme (Adobe apps, VISE installers, etc.), you're going to need to re-package those bad larries.
+
+h1. packaging
+
+We don't have time today to do an in-depth packaging workshop, but let's look at re-packaging a drag-copy app bundle with PackageMaker.
+
+h1. packaging
+
+musical interlude while we package something...
+
+h1. packaging
+
+What's a good candidate for re-packaging?
+
+*(step) almost anything
+*(step) applications with dodgy installers
+*(step) config files, like print configs and PPDs, font collections, and other user environment bobs and bits
+*(step) local accounts
+*(step) maintenance, first-run, and config scripts and launchd items
+
+h1. packaging
+
+Related to that last point, "The Luggage":http://github.com/unixorn/luggage is an easy way to package app bundles and script files. The Luggage uses @make@ to drive the PackageMaker binary, so you need both to get going. There is a bit of a learning curve, but it's easy enough to use for simple packages.
+
+Some of the benefits of using The Luggage are:
+
+*(step) all steps are defined in makefiles, so they're easily diffed and audited.
+*(step) it's easy to check the source for luggage makefiles into source control.
+*(step) there are some convenience features that make some common tasks pretty easy.
+
+Let's take a quick look here at packaging a script or app.
+
+h1. packaging
+
+(luggage time)
+
+h1. packaging notes
+
+These are some things to note when packaging apps:
+*(step) ensuring @root:admin@ ownership of the apps at build time will avoid the annoying "you downloaded this from the internet" dialog tied to the metadata associated with downloaded apps.
+*(step) uninstalls of .pkg files can be done programmatically, but beware of deleting frameworks that other apps may need.
+*(step) re-packaging Adobe's CS suites can work well, but installing them with pre-existing installs on disk will break the FLEX licensing scheme. for best results, remove any previous CS suite install before laying down the new one.
+*(step) MS Office 2008 updates should be packages now and generally work well enough as is. older Office 2004 updaters aren't .pkg files and can be a pain to re-package. I recommend using snapshot packaging to derive them.
+
+
+h1. imaging and deployment
+
+So we have a bunch of packages in hand now. I recommend rolling your own periodically as apps are updated. It's much easier to manage a small collection of packages than to deal with updating monolithic images.
+
+Let's use these packages.
+
+
+
+h1. instadmg
+
+Let's take a look at instadmg and instaup2date here.
+
+
+h1.	Deploy Studio
+
+Let's take a look at DS here.
+
+h1. puppet: what?
+
+
+
+h1. puppet: syntax
+
+h1. puppet: ralsh
+
+{{{
+<%= insert_code("user.pp") %>
+}}}
+
+h1. puppet: manifests
+
+h1. puppet: classes
+
+h1. puppet: modules
+
+h1. puppet: puppetd and puppetmasterd
+
+h1. babushka
+
+h1. git usage
+
+h1. mcx in brief
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

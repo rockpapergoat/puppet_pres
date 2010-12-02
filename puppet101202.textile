@@ -1,0 +1,299 @@
+title: munki and puppet, sitting in a tree
+author: nate st. germain
+
+h1. munki and puppet, <br />sitting in a tree
+
+<br />
+
+<img src="images/munki.jpg" width="45%" float: left >
+<img src="images/puppetlabs.png" width="50%" float: right >
+
+p=. Nate St. Germain<br />
+12/2/2010<br />
+
+h1. picking up where we left off: munki and puppet
+
+So what are we doing?
+*(step) 15 minutes of munki talk
+*(step) 45 minutes with puppet
+*(step) That's a rough plan, at least…
+
+h1. why is any of this interesting?
+
+#(step) Munki is basically like apple's software update server but for third party software and arbitrary packages. It will save you tons of time.
+#(step) Puppet is a configuration management framework that allows you to model system states and maintain them. It will save you tons of time.
+
+
+h1. munki: a summary
+
+Munki was written by "Greg Neagle":http://managingmacosx.wordpress.com, a sysadmin at disney animation studios. he wanted to implement configuration management software, like jamf's casper suite, but they didn't have the budget at the time. So instead, he wrote his own tools to manage software deployment in conjunction with "radmind":http://rsug.itd.umich.edu/software/radmind, which they already use. With that in mind, he wanted tools that would accommodate troublesome installers from adobe and other vendors.
+
+The munki project is open source, actively developed by a growing community, and available at "http://code.google.com/p/munki":http://code.google.com/p/munki.
+
+h1. munki: requirements
+
+*(step) Server side: apache or any modern web server that can handle files over 2 gb should work. some large app dmgs will exceed 2 gb.
+*(step) Server and client side: current munkitools installed with a modified preference file
+*(step) Servers can be any suitable platform, not just OS X. Clients must be OS X.
+
+h1. munki: making it go
+
+*(step) Prep your installer pkg (we're not covering this piece today).
+*(step) Import the pkg to your Munki repository.
+*(step) Add it to the correct catalog.
+*(step) Verify it's available on clients.
+*(step) By default, the launchd job has clients check the server once a day for updates.
+**(step) You can also force the updates at any time under the hood by using @managedsoftwareupdate@.
+
+h1. munki: importing packages
+
+*(step) The easiest way is to use the @munkiimport@ command under /usr/local/munki.
+**(step) Use @munkiimport --configure@ to set some defaults first.
+*(step) Add the pkg name to the appropriate manifest in the munki repo.
+*(step) Once that's done, you should be able to test with a client. We'll take a look in a minute here.
+
+h1. munki: configuring a client
+
+*(step) Install current munkitools on the hosts you want to manage.
+*(step) Be sure /Library/Preferences/ManagedInstalls.plist includes your software repository server details.
+
+h1. munki: example munki preferences file
+
+The /Library/Preferences/ManagedInstalls.plist file should look something like this:
+
+{{{
+<%= insert_code("ManagedInstalls.plist") %>
+}}}
+
+
+h1. munki: example manifest file
+
+A sample catalog looks like this. Note the array of installable items:
+
+{{{
+<%= insert_code("testing.manifest.plist") %>
+}}}
+
+h1. munki: managedsoftwareupdate options
+
+@/usr/local/munki/managedsoftwareupdate --help@ outputs the following options:
+
+{{{
+<%= insert_code("managedsoftwareupdate_usage.txt") %>
+}}}
+
+
+h1. munki: installing packages
+
+munki can install:
+
+* Apple-flat packages (.pkg)
+* Apple-flat meta-packages (.mpkg)
+* Apple-non-flat packages (.pkg)[1]
+* Apple-non-flat meta-packages (.mpkg)[1]
+* Drag-and-drop disk images
+* Adobe CS3/CS4/CS5 Deployment "packages" created with Adobe's Enterprise Deployment tools - CS3 Info CS4 Info CS5 Info
+* Many Adobe CS3/CS4/CS5 product updaters
+* Adobe Acrobat Pro 9.x updater disk images as downloaded from Adobe
+
+fn1.  Must be wrapped in a disk image file (.dmg). Disk image cannot require user to agree to a SLA before prior to mounting.
+
+*(step) There's also facility for managing dependencies and removals, which we might not cover today. (check the wiki)
+
+h1. munki: demonstration
+
+* Installing simple drag & drop apps, like iTerm
+* Installing configuration, like a new local print queue
+* Installing large apps, like Adobe CS 5 Premium
+* Removing an app with managed_uninstalls
+* Dependencies: Installing only if something else exists
+
+
+h1. munki: wrapup
+
+Munki allows you to deploy apps and configuration changes to your clients, even if they're not local admins. It's effective, quick, and relatively simple to use. I hope it makes some sense after this quick review. If you have questions, we can discuss more later.
+
+
+h1. puppet: what is this stuff?
+
+From the puppetlabs site:
+
+*(step) As system administrators acquire more and more systems to manage, automation of mundane tasks is increasingly important. Rather than develop in-house scripts, it is desirable to share a system that everyone can use, and invest in tools that can be used regardless of one’s employer. Certainly doing things manually doesn’t scale.
+
+*(step) Puppet has been developed to help the sysadmin community move to building and sharing mature tools that avoid the duplication of everyone solving the same problem. It does so in two ways:
+
+*(step) It provides a powerful framework to simplify the majority of the technical tasks that sysadmins need to perform
+
+*(step) The sysadmin work is written as code in Puppet’s custom language which is shareable just like any other code.
+
+*(step) This means that your work as a sysadmin can get done much faster, because you can have Puppet handle most or all of the details, and you can download code from other sysadmins to help you get done even faster. The majority of Puppet implementations use at least one or two modules developed by someone else, and there are already hundreds of modules developed and shared by the community.
+
+h1. puppet: no, really... what's the deal?
+
+h2. Puppet will save you time.
+
+h1. puppet: what else?
+
+*Q* Is puppet idempotent?
+*(step) Yes.
+
+*(step) idempotentcy: _Repeated applications have the same effect as one. Results are repeatable._
+
+h1. puppet: 0.25.x vs. 2.6.x branches
+
+*Note:* Puppetlabs merged in a pile of improvements this past year and bumped the version number from 0.25.x to 2.6.x. Generally, you should use the latest stable version, which is 2.6.4 as of this writing.
+
+* Download from Puppetlabs directly here: "http://www.puppetlabs.com/misc/download-options/":http://www.puppetlabs.com/misc/download-options/
+* Download OS X packages here: "http://sites.google.com/a/explanatorygap.net/puppet":http://sites.google.com/a/explanatorygap.net/puppet
+* Install both facter and puppet via rubygems with :@sudo gem install facter puppet@
+* Or, you can build from source available on the Puppetlabs site or github at "http://github.com/puppetlabs":http://github.com/puppetlabs
+
+There's enough different between the two versions to note this fact. Learn all about it on the roadmap page "here":http://projects.puppetlabs.com/projects/puppet/roadmap.
+
+The biggest change with the version bump is the move to a single binary instead of multiple. The next slide shows these differences.
+
+h1. puppet: single binary differences vs. old style
+
+List of binary changes:
+
+{{{
+<%= insert_code("puppet_Single_binary.txt") %>
+}}}
+
+
+h1. puppet: facter and facts
+
+A lot of what puppet does depends on details about host systems. To determine these, puppet uses a utility called @facter@, which can also be used as a standalone tool.
+
+The current version of @facter@ is 1.5.8.
+
+Facts are discovered by providers specific to each platform. There are generic, platform-specific, and custom facts.
+
+System facts can be used to build conditional logic for puppet manifests, among other things.
+
+h1. puppet: sample facter output
+
+This is facter output from my laptop. Let's take a quick look:
+
+{{{
+	<%= insert_code("facter.output.txt")%>
+}}}
+
+
+h1. puppet: resource types
+
+Puppet uses resources to describe a system. The goal is to manage resources on hosts, so there are a number of available resource types that make management easier. Here are some of the basic types:
+
+*(step) file
+*(step) group
+*(step) user
+*(step) service
+*(step) package
+*(step) host
+*(step) computer (OS X only for mcx)
+*(step) exec
+
+##########
+
+There are many more resource types that puppet can manage. For more, check the language guide.
+
+h1. puppet: file resources
+
+Generally, every resource has a name (namevar) associated with it. File resources often include other parameters, like mode and owner. This manifest is an example of setting ownership and modes on a file:
+
+{{{
+	<%= insert_code("sudo.pp") %>
+}}}
+
+h1. puppet: user and group resources
+
+User and group resources can be used to define local accounts -- most often service accounts. You wouldn't want to use these resources to create end user accounts, generally.
+
+Puppet also uses "virtual resources," which can be realized or defined in a different fashion. For now, let's focus on the basics.
+
+Here's an example of a standard user account manifest:
+
+{{{
+	<%= insert_code("user.pp") %>
+}}}
+
+##########
+
+Note the password hash is included in its entirety here. With non-login, service accounts, this usually isn't required. The userhome property can also be managed. If it is, the homedir will be created upon account addition.
+
+h1. puppet: service resources
+
+Service resources define service configuration and whether the services themselves are enabled, stopped, running, etc.
+
+Just like any resources, service definitions can depend upon other resources, like packages or other services, to be in place first.
+
+Here's an example that shows some dependencies and slightly more advanced syntax:
+
+{{{
+	<%= insert_code("remoteaccess.pp") %>
+}}}
+
+h1. puppet: exec resources
+
+Exec resources are the least auditable, since they rely on external commands to perform actions. If there are things that puppet can't do any other way, the exec type can fill the gap.
+
+Here's a simple example that pops up a HUD text box:
+
+{{{
+	<%= insert_code("talky.pp") %>
+}}}
+
+
+h1. puppet: a note on resource providers
+
+Resource providers are platform-specific chunks of code that deal with managing resources on their respective hosts. There are something like 20 different package providers, for instance.
+
+These providers abstract away the platform-specific bits and allow manifests to remain fairly portable across OSes.
+
+
+
+h1. puppet: sample language syntax
+
+Puppet uses its own Domain Specific Language (DSL) or pure ruby in manifests. It supports, among other things, regular expressions, conditionals, arithmetic, boolean operators, selectors, variables, hashes, arrays, and comments.
+
+In addition, any facter fact, including custom facts, can be used as a variable within puppet manifests.
+
+
+h1. puppet: ralsh
+
+Puppet includes something called the "resource abstraction layer" and a utility formerly called @ralsh@, or the "resource abstraction layer shell."
+
+Using @puppet resource@ or @ralsh@ will allow us to generate ready to run puppet resource definitions from new or existing resources. What does that mean? Let's take a look.
+
+*(step) 
+
+
+h1. puppet: manifests
+
+
+h1. puppet: classes
+
+Think of classes as groupings of resources. They're a simple way to define what a machine does, potentially including many of the resource types under one class.
+
+This example defines the mysql server and client on CentOS:
+{{{
+	<%= insert_code("mysql.pp") %>
+}}}
+
+
+h1. puppet: modules
+
+(modules are meant to be reusable chunks of code, ideally shared with others in the community)
+
+h1. puppet: nodes
+
+h1. puppet: puppetd and puppetmasterd
+
+h1. puppet: demonstration
+
+puppet standalone demo
+puppetd + puppetmaster demo
+* install an app
+* configure a service
+* add a local user
+* enforce state of a file

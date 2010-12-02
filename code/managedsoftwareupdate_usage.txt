@@ -1,0 +1,26 @@
+Usage: managedsoftwareupdate [options]
+
+Options:
+  -h, --help            show this help message and exit
+  -a, --auto            Used by launchd LaunchAgent for scheduled runs.
+                        No user feedback or intervention. All other options
+                        ignored.
+  -l, --logoutinstall   Used by launchd LaunchAgent when running at the
+                        loginwindow.
+  --installwithnologout
+                        Used by Managed Software Update.app when user
+                        triggers an install without logging out.
+  --manualcheck         Used by launchd LaunchAgent when checking
+                        manually.
+  -m, --munkistatusoutput
+                        Uses MunkiStatus.app for progress feedback when
+                        installing.
+  --id=ID               Alternate identifier for catalog retreival
+  -q, --quiet           Quiet mode. Logs messages, but nothing to stdout.
+                        --verbose is ignored if --quiet is used.
+  -v, --verbose         More verbose output. May be specified multiple
+                        times.
+  --checkonly           Check for updates, but don't install them.
+                        This is the default behavior.
+  --installonly         Skip checking and install any pending updates.
+  -V, --version         Print the version of the munki tools and exit.
